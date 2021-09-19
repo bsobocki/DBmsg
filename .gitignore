@@ -1,0 +1,6 @@
+*.out
+bin
+*.dll
+Debug
+x64
+Release
