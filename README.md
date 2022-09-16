@@ -1,4 +1,4 @@
-# D&B Communicator
+# D&B Message
 
 Project by Damian and Bartosz.
 
