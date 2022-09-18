@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class AppGateway implements OnGatewayInit {
   @WebSocketServer() wss: Server;
   private logger: Logger = new Logger('AppGateway');
@@ -19,11 +19,11 @@ export class AppGateway implements OnGatewayInit {
 
   @SubscribeMessage('echoMessage')
   echoMessage(client: Socket, message: string): WsResponse<string> {
-    return { event: 'echoMessage', data: message };
+    return { event: 'echoMessage', data: `ECHO: ${message}` };
   }
 
   @SubscribeMessage('broadcastMessage')
   handleMessage(client: Socket, message: string): void {
-    this.wss.emit('receiveBroadcastMessage', message);
+    this.wss.emit('receiveBroadcastedMessage', message);
   }
 }
