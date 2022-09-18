@@ -23,7 +23,7 @@ export class AppGateway implements OnGatewayInit {
   }
 
   @SubscribeMessage('broadcastMessage')
-  handleMessage(client: Socket, text: string): void {
-    this.wss.emit('receiveBroadcastMessage', text);
+  handleMessage(client: Socket, message: string): void {
+    this.wss.emit('receiveBroadcastMessage', message);
   }
 }
