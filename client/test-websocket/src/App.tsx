@@ -1,35 +1,28 @@
 import React, { useEffect } from "react";
 import "./App.css";
-import { io } from "socket.io-client";
 
-const socket = io("ws://107.21.129.164:3008");
+// const socket = new WebSocket("ws://localhost:3008");
+const socket = new WebSocket("ws://107.21.129.164:3008");
 
 function App() {
   const [messages, setMessages] = React.useState<string[]>([]);
   const [textField, setTextField] = React.useState<string>("");
-  const [isConnected, setIsConnected] = React.useState(socket.connected);
+  const [isConnected, setIsConnected] = React.useState(false);
 
   useEffect(() => {
-    socket.connect();
-
-    socket.on("connect", () => {
+    socket.onopen = function () {
       setIsConnected(true);
-    });
-    socket.on("disconnect", () => {
-      setIsConnected(false);
-    });
-    return () => {
-      socket.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    socket.on("echoMessage", (text) => {
-      console.log("EVENT(Echo):", text);
-    });
-    socket.on("receiveBroadcastedMessage", (text) => {
-      setMessages([...messages, text]);
-    });
+    socket.onmessage = function (message) {
+      const data: { event: string; data: string } = JSON.parse(message.data);
+      const event = data.event;
+      if (event === "receiveBroadcastedMessage") {
+        setMessages([...messages, data.data]);
+      }
+    };
   }, [messages]);
 
   const onSubmitMessage = (
@@ -41,7 +34,12 @@ function App() {
       alert("Not connected to server");
       return;
     }
-    socket.emit("broadcastMessage", textField);
+    socket.send(
+      JSON.stringify({
+        event: "broadcastMessage",
+        data: textField,
+      })
+    );
     setTextField("");
     e.preventDefault();
   };

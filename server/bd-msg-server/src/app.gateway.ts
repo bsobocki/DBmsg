@@ -1,29 +1,49 @@
 import { Logger } from '@nestjs/common';
+import { Server } from 'ws';
 import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
-export class AppGateway implements OnGatewayInit {
-  @WebSocketServer() wss: Server;
+@WebSocketGateway({ transports: ['websocket'] })
+export class AppGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  wsClients = [];
+  @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
 
   afterInit(server: any) {
     this.logger.log('Initialized!');
   }
 
+  handleConnection(client: any) {
+    this.wsClients.push(client);
+  }
+
+  handleDisconnect(client: any) {
+    this.wsClients = this.wsClients.filter((c) => c !== client);
+  }
+
   @SubscribeMessage('echoMessage')
-  echoMessage(client: Socket, message: string): WsResponse<string> {
-    return { event: 'echoMessage', data: `ECHO: ${message}` };
+  echoMessage(client: any, data: string): WsResponse<string> {
+    return { event: 'events', data: data };
   }
 
   @SubscribeMessage('broadcastMessage')
-  handleMessage(client: Socket, message: string): void {
-    this.wss.emit('receiveBroadcastedMessage', message);
+  broadcastMessage(client: any, data: string): void {
+    this.broadcast('receiveBroadcastedMessage', data);
+  }
+
+  private broadcast(event, message: any) {
+    const broadCastMessage = JSON.stringify({ event, data: message });
+    for (let c of this.wsClients) {
+      c.send(broadCastMessage);
+    }
   }
 }
