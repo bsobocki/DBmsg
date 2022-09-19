@@ -15,7 +15,7 @@ I've also configured a websocket with the following events:
 ###### Broadcast message
 - Event: broadcastMessage
 - Payload: string
-- Result: Sends an event receiveBoadcastMessage with provided payload to all clients.
+- Result: Sends an event receiveBoadcastedMessage with provided payload to all clients.
 
 For more details see `app.gateway.ts` for websocket endpoints and `app.controller.ts` for HTTP endpoints which can be found in `./bd-msg-server/src`
 
