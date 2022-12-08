@@ -23,20 +23,30 @@ export class AppGateway
   }
 
   handleConnection(client: any) {
+    console.log('Client connected: ' + client);
     this.wsClients.push(client);
   }
 
   handleDisconnect(client: any) {
+    console.log('Client disconnected: ' + client);
     this.wsClients = this.wsClients.filter((c) => c !== client);
+  }
+
+  @SubscribeMessage('')
+  randomMessage(client: any, data: string): WsResponse<string> {
+    console.log('random: ' + data);
+    return { event: 'events', data: data };
   }
 
   @SubscribeMessage('echoMessage')
   echoMessage(client: any, data: string): WsResponse<string> {
+    console.log('Echo message: ' + data);
     return { event: 'events', data: data };
   }
 
   @SubscribeMessage('broadcastMessage')
   broadcastMessage(client: any, data: string): void {
+    console.log('Broadcast message: ' + data);
     this.broadcast('receiveBroadcastedMessage', data);
   }
 
